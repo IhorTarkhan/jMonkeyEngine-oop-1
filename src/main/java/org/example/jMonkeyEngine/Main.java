@@ -16,7 +16,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class Main extends SimpleApplication {
     public static final float LIGHT_SPEED = 3;
@@ -31,13 +30,13 @@ public class Main extends SimpleApplication {
         drawMesh(new Arrow(new Vector3f(0, 100, 0)), ColorRGBA.Green);
         drawMesh(new Arrow(new Vector3f(0, 0, 100)), ColorRGBA.Blue);
 
-        readInput()
+        readInputAsPositions()
                 .forEach(point ->
-                        drawMesh(new Box(0.5F, 0.5f, point.z / 2), ColorRGBA.randomColor(), new Vector3f(point.x - 0.5f, point.y - 0.5f, point.z / 2))
+                        drawMesh(new Box(1, 1, point.z), ColorRGBA.randomColor(), new Vector3f(2 * point.x, 2 * point.y, point.z))
                 );
     }
 
-    private Stream<Vector3f> readInput() {
+    private List<Vector3f> readInputAsPositions() {
         try {
             List<String[]> input = Files.lines(Path.of("input.csv"))
                     .skip(1)
@@ -53,11 +52,11 @@ public class Main extends SimpleApplication {
                             new Vector3f(
                                     Float.parseFloat(line[0]),
                                     Float.parseFloat(line[1]),
-                                    maxDeep - Float.parseFloat(line[2]) * LIGHT_SPEED + 1
-                            ));
+                                    maxDeep - Float.parseFloat(line[2]) * LIGHT_SPEED
+                            ))
+                    .collect(Collectors.toList());
         } catch (IOException e) {
-            e.printStackTrace();
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
 
