@@ -9,10 +9,17 @@ import com.jme3.scene.Mesh;
 import com.jme3.scene.debug.Arrow;
 import com.jme3.scene.shape.Box;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Main extends SimpleApplication {
+    public static final float LIGHT_SPEED = 3;
 
     public static void main(String[] args) {
         new Main().start();
@@ -24,17 +31,34 @@ public class Main extends SimpleApplication {
         drawMesh(new Arrow(new Vector3f(0, 100, 0)), ColorRGBA.Green);
         drawMesh(new Arrow(new Vector3f(0, 0, 100)), ColorRGBA.Blue);
 
-        List.of(
-                        new Column(0, 0, 1),
-                        new Column(1, 2, 3),
-                        new Column(2, 1, 4),
-                        new Column(2, 2, 5),
-                        new Column(2, 3, 3),
-                        new Column(3, 3, 3)
-                )
+        readInput()
                 .forEach(point ->
-                        drawMesh(new Box(0.5F, 0.5f, point.z() / 2), ColorRGBA.randomColor(), new Vector3f(point.x() - 0.5f, point.y() - 0.5f, point.z() / 2))
+                        drawMesh(new Box(0.5F, 0.5f, point.z / 2), ColorRGBA.randomColor(), new Vector3f(point.x - 0.5f, point.y - 0.5f, point.z / 2))
                 );
+    }
+
+    private Stream<Vector3f> readInput() {
+        try {
+            List<String[]> input = Files.lines(Path.of("input.csv"))
+                    .skip(1)
+                    .map(line -> line.split(","))
+                    .collect(Collectors.toList());
+            float maxTime = input.stream()
+                    .map(line1 -> Float.parseFloat(line1[2]))
+                    .max(Comparator.naturalOrder())
+                    .orElseThrow();
+            float maxDeep = maxTime * LIGHT_SPEED;
+            return input.stream()
+                    .map(line ->
+                            new Vector3f(
+                                    Float.parseFloat(line[0]),
+                                    Float.parseFloat(line[1]),
+                                    maxDeep - Float.parseFloat(line[2]) * LIGHT_SPEED + 1
+                            ));
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException();
+        }
     }
 
     private void drawMesh(Mesh mesh, ColorRGBA color) {
